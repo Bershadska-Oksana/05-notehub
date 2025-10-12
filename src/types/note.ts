@@ -1,13 +1,13 @@
 export interface Note {
-  id: string;
+  _id: string;
   title: string;
   content: string;
+  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
   createdAt: string;
   updatedAt?: string;
-  tag?: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
 }
 
-export type NewNote = Omit<Note, "id" | "createdAt" | "updatedAt">;
+export type NewNote = Omit<Note, "_id" | "createdAt" | "updatedAt">;
 
 export interface FetchNotesResponse {
   data: Note[];

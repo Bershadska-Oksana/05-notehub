@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
-import { fetchNotes } from "../../services/noteService";
+import { fetchNotes, deleteNote } from "../../services/noteService";
 import NoteList from "../NoteList/NoteList";
 import Pagination from "../Pagination/Pagination";
 import SearchBox from "../SearchBox/SearchBox";
@@ -14,30 +14,30 @@ function App() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [debouncedSearch] = useDebounce(search, 500);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["notes", page, debouncedSearch],
-    queryFn: () => fetchNotes(page, debouncedSearch),
-    placeholderData: (prev) => prev,
+    queryFn: () => fetchNotes({ page, search: debouncedSearch }),
   });
 
-  const notes =
-    data?.data?.map((note: any) => ({
-      id: note.id ?? note._id,
-      title: note.title,
-      content: note.content ?? note.text,
-      createdAt: note.createdAt,
-      tag: note.tag,
-    })) ?? [];
+  const mutation = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notes", page, debouncedSearch]);
+    },
+  });
 
-  const totalPages = data?.totalPages ?? 0;
+  const handleDelete = (id: string) => {
+    mutation.mutate(id);
+  };
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox value={search} onChange={setSearch} />
-        {totalPages > 1 && (
-          <Pagination pageCount={totalPages} onPageChange={setPage} />
+        {data?.totalPages > 1 && (
+          <Pagination pageCount={data.totalPages} onPageChange={setPage} />
         )}
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
@@ -47,8 +47,8 @@ function App() {
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Something went wrong. Please try again.</p>}
 
-      {notes.length > 0 ? (
-        <NoteList notes={notes} />
+      {data?.notes.length ? (
+        <NoteList notes={data.notes} onDelete={handleDelete} />
       ) : (
         !isLoading && <p>No notes found.</p>
       )}
