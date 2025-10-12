@@ -1,3 +1,4 @@
+import React from "react";
 import type { Note } from "../../types/note";
 import css from "./NoteList.module.css";
 
@@ -11,7 +12,7 @@ const NoteList = ({ notes }: Props) => {
   return (
     <ul className={css.list}>
       {notes.map((note) => (
-        <li key={note._id} className={css.item}>
+        <li key={note.id} className={css.item}>
           <h3>{note.title}</h3>
           <p>{note.text}</p>
           <small>Created: {new Date(note.createdAt).toLocaleString()}</small>
