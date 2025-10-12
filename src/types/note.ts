@@ -11,8 +11,5 @@ export type NewNote = Omit<Note, "id" | "createdAt" | "updatedAt">;
 
 export interface FetchNotesResponse {
   data: Note[];
-  page?: number;
-  perPage?: number;
-  total?: number;
-  totalPages?: number;
+  totalPages: number;
 }

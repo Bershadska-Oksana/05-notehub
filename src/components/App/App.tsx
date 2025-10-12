@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { fetchNotes } from "../../services/noteService";
@@ -13,15 +13,23 @@ function App() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [debouncedSearch] = useDebounce(search, 500);
-  const { data, isLoading } = useQuery({
-    queryKey: ["notes", currentPage],
-    queryFn: () => fetchNotes(currentPage),
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["notes", page, debouncedSearch],
+    queryFn: () => fetchNotes(page, debouncedSearch),
     placeholderData: (prev) => prev,
   });
 
-  const notes = data?.data ?? [];
+  const notes =
+    data?.data?.map((note: any) => ({
+      id: note.id ?? note._id,
+      title: note.title,
+      content: note.content ?? note.text,
+      createdAt: note.createdAt,
+      tag: note.tag,
+    })) ?? [];
+
   const totalPages = data?.totalPages ?? 0;
 
   return (
@@ -38,6 +46,7 @@ function App() {
 
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Something went wrong. Please try again.</p>}
+
       {notes.length > 0 ? (
         <NoteList notes={notes} />
       ) : (
@@ -45,7 +54,7 @@ function App() {
       )}
 
       {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
+        <Modal onClose={() => setIsModalOpen(false)} title="Create note">
           <NoteForm onClose={() => setIsModalOpen(false)} />
         </Modal>
       )}

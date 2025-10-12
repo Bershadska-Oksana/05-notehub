@@ -14,7 +14,7 @@ const NoteList = ({ notes }: Props) => {
       {notes.map((note) => (
         <li key={note.id} className={css.item}>
           <h3>{note.title}</h3>
-          <p>{note.text}</p>
+          <p>{note.content}</p>
           <small>Created: {new Date(note.createdAt).toLocaleString()}</small>
         </li>
       ))}

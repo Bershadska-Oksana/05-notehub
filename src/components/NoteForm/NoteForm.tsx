@@ -37,7 +37,6 @@ const NoteForm = ({ onClose }: Props) => {
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
-
       <select value={tag} onChange={(e) => setTag(e.target.value)}>
         <option value="Todo">Todo</option>
         <option value="Work">Work</option>
@@ -45,7 +44,6 @@ const NoteForm = ({ onClose }: Props) => {
         <option value="Meeting">Meeting</option>
         <option value="Shopping">Shopping</option>
       </select>
-
       <div className={css.buttons}>
         <button type="submit">Save</button>
         <button type="button" onClick={onClose}>
