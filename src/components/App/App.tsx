@@ -15,11 +15,10 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [debouncedSearch] = useDebounce(search, 500);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["notes", page, debouncedSearch],
-    queryFn: () => fetchNotes({ page, perPage: 12, search: debouncedSearch }),
-    keepPreviousData: true,
+  const { data, isLoading } = useQuery({
+    queryKey: ["notes", currentPage],
+    queryFn: () => fetchNotes(currentPage),
+    placeholderData: (prev) => prev,
   });
 
   const notes = data?.data ?? [];

@@ -1,9 +1,15 @@
 export interface Note {
-  _id: string;
-  id?: string;
+  id: string;
   title: string;
-  text: string;
-  tag?: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+  content: string;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
+  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+}
+
+export type NewNote = Omit<Note, "id" | "createdAt" | "updatedAt">;
+
+export interface FetchNotesResponse {
+  data: Note[];
+  totalPages: number;
 }

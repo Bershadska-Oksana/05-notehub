@@ -8,14 +8,15 @@ type Props = {
 
 const NoteForm = ({ onClose }: Props) => {
   const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
+  const [content, setContent] = useState("");
+  const [tag, setTag] = useState("Todo");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !text) return;
+    if (!title || !content) return;
 
     try {
-      await createNote({ title, text, tag });
+      await createNote({ title, content, tag });
       onClose();
       window.location.reload();
     } catch (error) {
@@ -33,9 +34,18 @@ const NoteForm = ({ onClose }: Props) => {
       />
       <textarea
         placeholder="Content"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
       />
+
+      <select value={tag} onChange={(e) => setTag(e.target.value)}>
+        <option value="Todo">Todo</option>
+        <option value="Work">Work</option>
+        <option value="Personal">Personal</option>
+        <option value="Meeting">Meeting</option>
+        <option value="Shopping">Shopping</option>
+      </select>
+
       <div className={css.buttons}>
         <button type="submit">Save</button>
         <button type="button" onClick={onClose}>
