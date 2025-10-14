@@ -1,13 +1,28 @@
 import React from "react";
 import type { Note } from "../../types/note";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteNote } from "../../services/noteService";
 import css from "./NoteList.module.css";
 
-type Props = {
+export interface NoteListProps {
   notes: Note[];
-  onDelete?: (id: string) => void;
-};
+}
 
-const NoteList = ({ notes, onDelete }: Props) => {
+const NoteList = ({ notes }: NoteListProps) => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (id: string) => deleteNote(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    if (!window.confirm("Delete this note?")) return;
+    mutation.mutate(id);
+  };
+
   if (!notes || notes.length === 0) return <p>No notes found.</p>;
 
   return (
@@ -19,15 +34,13 @@ const NoteList = ({ notes, onDelete }: Props) => {
 
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            {onDelete && (
-              <button
-                className={css.button}
-                onClick={() => onDelete(note.id)}
-                aria-label="Delete note"
-              >
-                Delete
-              </button>
-            )}
+            <button
+              className={css.button}
+              onClick={() => handleDelete(note.id)}
+              aria-label="Delete note"
+            >
+              Delete
+            </button>
           </div>
         </li>
       ))}

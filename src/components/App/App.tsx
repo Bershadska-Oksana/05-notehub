@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
-import { fetchNotes, deleteNote } from "../../services/noteService";
+import { fetchNotes, FetchNotesResponse } from "../../services/noteService";
 import NoteList from "../NoteList/NoteList";
 import Pagination from "../Pagination/Pagination";
 import SearchBox from "../SearchBox/SearchBox";
@@ -11,33 +11,34 @@ import css from "./App.module.css";
 
 function App() {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [search, setSearchState] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [debouncedSearch] = useDebounce(search, 500);
-  const queryClient = useQueryClient();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery<FetchNotesResponse>({
     queryKey: ["notes", page, debouncedSearch],
-    queryFn: () => fetchNotes({ page, search: debouncedSearch }),
+    queryFn: () => fetchNotes({ page, perPage: 12, search: debouncedSearch }),
+    keepPreviousData: true,
   });
 
-  const mutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["notes", page, debouncedSearch]);
-    },
-  });
+  const notes = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 0;
 
-  const handleDelete = (id: string) => {
-    mutation.mutate(id);
-  };
+  const setSearch = useCallback((value: string) => {
+    setPage(1);
+    setSearchState(value);
+  }, []);
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox value={search} onChange={setSearch} />
-        {data?.totalPages > 1 && (
-          <Pagination pageCount={data.totalPages} onPageChange={setPage} />
+        {totalPages > 1 && (
+          <Pagination
+            pageCount={totalPages}
+            currentPage={page}
+            onPageChange={setPage}
+          />
         )}
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
@@ -47,8 +48,8 @@ function App() {
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Something went wrong. Please try again.</p>}
 
-      {data?.notes.length ? (
-        <NoteList notes={data.notes} onDelete={handleDelete} />
+      {notes.length > 0 ? (
+        <NoteList notes={notes} />
       ) : (
         !isLoading && <p>No notes found.</p>
       )}
